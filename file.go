@@ -5,6 +5,11 @@ import (
 	"os"
 )
 
+type FileBuffers struct {
+	read   *os.File
+	append *os.File
+}
+
 func GetReadFile(path string) *os.File {
 	f, err := os.Open(path)
 	Panic(err)
@@ -30,4 +35,11 @@ func ReadFile(file *os.File, offset int64, limit int) []byte {
 func Append(file *os.File, content []byte) {
 	_, err := file.Write(content)
 	Panic(err)
+}
+
+func GetFileBuffers(path string) FileBuffers {
+	return FileBuffers{
+		read:   GetReadFile("data.db"),
+		append: GetAppendFile("data.db"),
+	}
 }

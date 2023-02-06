@@ -2,33 +2,43 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"time"
 )
 
+func createDummyDb(appendFile *os.File) {
+	var record = map[string]string{
+		"name": "Parmod",
+	}
+
+	for i := 0; i < 100000; i++ {
+		fmt.Printf("%d\n", i)
+		record["idx"] = strconv.Itoa(i)
+		InsertRecord(appendFile, record)
+	}
+}
+
 func main() {
-	// appendFile := GetAppendFile("data")
-	readFile := GetReadFile("data.db")
+	fileBuffers := GetFileBuffers("data.db")
+	fmt.Println("Initiated")
 
-	// var record = map[string]string{
-	// 	"name": "Parmod",
-	// }
+	meta := GetDbMeta(fileBuffers.read)
 
-	// for i := 0; i < 10000000; i++ {
-	// 	fmt.Printf("%d\n", i)
-	// 	record["idx"] = strconv.Itoa(i)
-	// 	InsertRecord(appendFile, record)
-	// }
-
-	// for i := int64(0); i < 10000; i++ {
-	// 	record := GetRecord(readFile, i)
-	// 	fmt.Printf("Compare %d %s\n", i, record["idx"].(string))
-	// 	if record["idx"] != strconv.Itoa(int(i)) {
-	// 		panic(i)
-	// 	}
-	// }
+	index := GenerateIndex(fileBuffers.read, "idx")
+	fmt.Println("Generated index")
 
 	t1 := time.Now()
-	fmt.Println(GetRecord(readFile, 3823293))
+	GetRecord(fileBuffers.read, index["99999"][0])
 	t2 := time.Now()
-	fmt.Println(t2.Sub(t1))
+	fmt.Println("With index: ", t2.Sub(t1))
+
+	t1 = time.Now()
+	for i := int64(0); i < meta.count; i++ {
+		record := GetRecord(fileBuffers.read, i)
+		if record["idx"] == "99999" {
+			t2 = time.Now()
+			fmt.Println("Without index: ", t2.Sub(t1))
+		}
+	}
 }

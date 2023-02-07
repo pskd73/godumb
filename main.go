@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
-	"time"
+
+	"godumb/core"
+	"godumb/prompt"
 )
 
-func insertRandomRecords(collection *Collection) {
+func insertRandomRecords(collection *core.Collection) {
 	var record = map[string]interface{}{
 		"name": "Parmod",
 	}
@@ -17,25 +19,19 @@ func insertRandomRecords(collection *Collection) {
 }
 
 func main() {
-	collection := Collection{}
-	collection.Init("data")
-	// insertRandomRecords(&collection)
-	// fmt.Println(collection.GetMeta().count)
-	// for _, record := range collection.GetAllRecords() {
-	// 	fmt.Println(record)
+	// collection := core.Collection{}
+	// collection.Init("yelp_tip")
+	// data, _ := ioutil.ReadFile("yelp_academic_dataset_tip.json")
+	// lines := strings.Split(string(data), "\n")
+
+	// for i, line := range lines {
+	// 	fmt.Println(i)
+	// 	var lineJson map[string]interface{}
+	// 	json.Unmarshal([]byte(line), &lineJson)
+	// 	if lineJson != nil {
+	// 		collection.Insert(lineJson)
+	// 	}
 	// }
 
-	t1 := time.Now()
-	collection.GetRecordById("dadcfbb7-7651-41f6-b5ec-fac18a673c00")
-	t2 := time.Now()
-	fmt.Println("With index: ", t2.Sub(t1))
-
-	t1 = time.Now()
-	for i := int64(0); i < collection.GetMeta().count; i++ {
-		record := collection.GetRecordByIdx(i)
-		if record["_id"] == "dadcfbb7-7651-41f6-b5ec-fac18a673c00" {
-			t2 = time.Now()
-			fmt.Println("Without index: ", t2.Sub(t1))
-		}
-	}
+	prompt.Run()
 }

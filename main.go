@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"godumb/core"
-	"godumb/prompt"
 )
 
 func insertRandomRecords(collection *core.Collection) {
@@ -33,5 +32,18 @@ func main() {
 	// 	}
 	// }
 
-	prompt.Run()
+	// prompt.Run()
+
+	coll := core.Collection{}
+	coll.Init("ytl")
+	coll.AddIndex("user_id")
+	fmt.Println("Index created")
+	fmt.Print(coll.GetByKey("date", "2013-02-28 02:05:54"))
+	// t1 := time.Now()
+	// for _, s := range coll.VirtualFile.CachedContent {
+	// 	fmt.Print(s)
+	// }
+	// t2 := time.Now()
+
+	// fmt.Println(t2.Sub(t1))
 }

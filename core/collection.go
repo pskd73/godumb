@@ -2,61 +2,57 @@ package core
 
 import (
 	"fmt"
-	"os"
+
+	"godumb/file"
 
 	"github.com/google/uuid"
 )
 
+const BLOCK_SIZE = 1024 * 1
+
 type Collection struct {
-	name       string
-	indexMaps  map[string]IndexMap
-	readFile   *os.File
-	appendFile *os.File
+	name      string
+	IndexMaps map[string]IndexMap
+	File      file.BlockedFile
 }
 
 func (self *Collection) Init(name string) {
 	self.name = name
-	self.readFile = GetReadFile(fmt.Sprintf("%s.db", name))
-	self.appendFile = GetAppendFile(fmt.Sprintf("%s.db", name))
-	self.indexMaps = make(map[string]IndexMap)
-	self.indexMaps["_id"] = GenerateIndexMap(self.readFile, "_id")
+
+	f := file.PhysicalFile{Path: fmt.Sprintf("%s.db", name)}
+	file := file.BlockedFile{File: &f, BlockSize: BLOCK_SIZE}
+	file.Init()
+	self.File = file
+	self.IndexMaps = make(map[string]IndexMap)
+	self.IndexMaps["_id"] = GenerateIndexMap(BlocksToRecords(self.File.All()), "_id")
 	fmt.Printf("Collection: %s initiated\n", name)
 }
 
-func (self *Collection) GetRecordByIdx(idx RecordAddress) Record {
-	return GetRecord(self.readFile, idx)
+func (self *Collection) GetRecordByIdx(idx int64) Record {
+	return BlockToRecord(self.File.Get(idx))
 }
 
 func (self *Collection) GetRecordById(id string) Record {
-	return self.GetRecordByIdx(self.indexMaps["_id"][id][0])
+	return self.GetRecordByIdx(self.IndexMaps["_id"][id][0])
 }
 
 func (self *Collection) Insert(record Record) {
 	record["_id"] = uuid.New().String()
-	idx := InsertRecord(self.appendFile, record)
-	UpdateIndexMap(self.indexMaps["_id"], record["_id"], idx)
-}
-
-func (self *Collection) GetMeta() DbMeta {
-	return GetDbMeta(self.readFile)
+	idx := self.File.Push(RecordToBlock(record, self.File.BlockSize))
+	UpdateIndexMap(self.IndexMaps["_id"], record["_id"], idx)
 }
 
 func (self *Collection) GetAllRecords() []Record {
-	meta := self.GetMeta()
-	var records []Record
-	for i := int64(0); i < meta.Count; i++ {
-		records = append(records, self.GetRecordByIdx(RecordAddress(i)))
-	}
-	return records
+	return BlocksToRecords(self.File.All())
 }
 
 func (self *Collection) AddIndex(field string) {
-	self.indexMaps[field] = GenerateIndexMap(self.readFile, field)
+	self.IndexMaps[field] = GenerateIndexMap(self.GetAllRecords(), field)
 }
 
-func (self *Collection) GetByKey(key string, value string) []Record {
-	var addresses []RecordAddress
-	if indexMap, exists := self.indexMaps[key]; exists {
+func (self *Collection) GetByKey(key string, value interface{}) []Record {
+	var addresses []int64
+	if indexMap, exists := self.IndexMaps[key]; exists {
 		if addrs, rowExists := indexMap[value]; rowExists {
 			addresses = addrs
 		}
@@ -68,8 +64,7 @@ func (self *Collection) GetByKey(key string, value string) []Record {
 		}
 		return records
 	}
-	for i := int64(0); i < self.GetMeta().Count; i++ {
-		record := self.GetRecordByIdx(RecordAddress(i))
+	for _, record := range self.GetAllRecords() {
 		if record[key] == value {
 			records = append(records, record)
 		}

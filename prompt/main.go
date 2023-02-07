@@ -3,6 +3,8 @@ package prompt
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
 	"godumb/core"
 )
@@ -16,9 +18,9 @@ type MenuItem struct {
 	Func func(*State)
 }
 
-func PrintMenu(menu map[string]MenuItem) {
+func PrintMenu(menu []MenuItem) {
 	for k, v := range menu {
-		fmt.Printf("%s. %s\n", k, v.Name)
+		fmt.Printf("%d. %s\n", k+1, v.Name)
 	}
 }
 
@@ -41,6 +43,18 @@ func GetById(state *State) {
 	fmt.Println(state.Collection.GetRecordById(id))
 }
 
+func GetByIdx(state *State) {
+	var idx string
+	fmt.Printf("Enter idx: ")
+	fmt.Scan(&idx)
+
+	idxInt, err := strconv.Atoi(idx)
+	if err != nil {
+		return
+	}
+	fmt.Println(state.Collection.GetRecordByIdx(int64(idxInt)))
+}
+
 func AddIndex(state *State) {
 	var field string
 	fmt.Printf("Enter key: ")
@@ -55,19 +69,25 @@ func GetByKey(state *State) {
 	fmt.Scan(&key)
 	fmt.Printf("Enter value: ")
 	fmt.Scan(&val)
+	t1 := time.Now()
 	fmt.Println(state.Collection.GetByKey(key, val))
+	t2 := time.Now()
+	fmt.Printf("Time taken: %s", t2.Sub(t1))
 }
 
 func Run() {
-	menu := map[string]MenuItem{
-		"1": {Name: "Load collection", Func: LoadCollection},
-		"2": {Name: "Exit", Func: Exit},
-		"3": {Name: "Get by _id", Func: GetById},
-		"4": {Name: "Get by key", Func: GetByKey},
-		"5": {Name: "Add index", Func: AddIndex},
+	menu := []MenuItem{
+		{Name: "Load collection", Func: LoadCollection},
+		{Name: "Add index", Func: AddIndex},
+		{Name: "Get by idx", Func: GetByIdx},
+		{Name: "Get by _id", Func: GetById},
+		{Name: "Get by key", Func: GetByKey},
+		{Name: "Exit", Func: Exit},
 	}
 
 	state := State{}
+	// state.Collection = &core.Collection{}
+	// state.Collection.Init("yelp_tip")
 
 	for true {
 		var input string
@@ -75,10 +95,14 @@ func Run() {
 		PrintMenu(menu)
 		fmt.Printf("\nEnter the menu number: ")
 		fmt.Scan(&input)
-		if menuItem, ok := menu[input]; ok {
-			menuItem.Func(&state)
+
+		if inputInt, err := strconv.Atoi(input); err != nil {
+			continue
 		} else {
-			fmt.Printf("Please enter valid option!\n")
+			if inputInt < 1 || inputInt > len(menu) {
+				continue
+			}
+			menu[inputInt-1].Func(&state)
 		}
 	}
 

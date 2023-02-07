@@ -2,17 +2,21 @@ package main
 
 import "os"
 
-func GenerateIndex(readFile *os.File, field string) map[interface{}][]int64 {
+func GenerateIndexMap(readFile *os.File, key string) map[interface{}][]int64 {
 	meta := GetDbMeta(readFile)
-	index := make(map[interface{}][]int64)
+	indexMap := make(map[interface{}][]int64)
 
 	for i := int64(0); i < meta.count; i++ {
 		record := GetRecord(readFile, i)
-		if index[record[field]] == nil {
-			index[record[field]] = []int64{}
-		}
-		index[record[field]] = append(index[record[field]], i)
+		UpdateIndexMap(indexMap, record[key], i)
 	}
 
-	return index
+	return indexMap
+}
+
+func UpdateIndexMap(indexMap map[interface{}][]int64, key interface{}, idx int64) {
+	if indexMap[key] == nil {
+		indexMap[key] = []int64{}
+	}
+	indexMap[key] = append(indexMap[key], idx)
 }

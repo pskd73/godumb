@@ -2,41 +2,38 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"time"
 )
 
-func createDummyDb(appendFile *os.File) {
-	var record = map[string]string{
+func insertRandomRecords(collection *Collection) {
+	var record = map[string]interface{}{
 		"name": "Parmod",
 	}
 
 	for i := 0; i < 100000; i++ {
 		fmt.Printf("%d\n", i)
-		record["idx"] = strconv.Itoa(i)
-		InsertRecord(appendFile, record)
+		collection.Insert(record)
 	}
 }
 
 func main() {
-	fileBuffers := GetFileBuffers("data.db")
-	fmt.Println("Initiated")
-
-	meta := GetDbMeta(fileBuffers.read)
-
-	index := GenerateIndex(fileBuffers.read, "idx")
-	fmt.Println("Generated index")
+	collection := Collection{}
+	collection.Init("data")
+	// insertRandomRecords(&collection)
+	// fmt.Println(collection.GetMeta().count)
+	// for _, record := range collection.GetAllRecords() {
+	// 	fmt.Println(record)
+	// }
 
 	t1 := time.Now()
-	GetRecord(fileBuffers.read, index["99999"][0])
+	collection.GetRecordById("dadcfbb7-7651-41f6-b5ec-fac18a673c00")
 	t2 := time.Now()
 	fmt.Println("With index: ", t2.Sub(t1))
 
 	t1 = time.Now()
-	for i := int64(0); i < meta.count; i++ {
-		record := GetRecord(fileBuffers.read, i)
-		if record["idx"] == "99999" {
+	for i := int64(0); i < collection.GetMeta().count; i++ {
+		record := collection.GetRecordByIdx(i)
+		if record["_id"] == "dadcfbb7-7651-41f6-b5ec-fac18a673c00" {
 			t2 = time.Now()
 			fmt.Println("Without index: ", t2.Sub(t1))
 		}

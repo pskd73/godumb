@@ -12,7 +12,7 @@ type DbMeta struct {
 	size  int64
 }
 
-func InsertRecord(appendFile *os.File, data interface{}) {
+func InsertRecord(appendFile *os.File, data interface{}) int64 {
 	var content bytes.Buffer
 
 	padded, err := Pad(ToBase64(JsonToString(data)), RECORD_SIZE)
@@ -22,6 +22,8 @@ func InsertRecord(appendFile *os.File, data interface{}) {
 	content.WriteString("\n")
 
 	Append(appendFile, content.Bytes())
+
+	return GetDbMeta(appendFile).count
 }
 
 func GetRecord(readFile *os.File, idx int64) map[string]interface{} {

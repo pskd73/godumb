@@ -1,24 +1,33 @@
 package file
 
-type VirtualFile struct {
-	File          *PhysicalFile
-	CachedContent string
+type VirtualBlockedFile struct {
+	File BlockedFile
 }
 
-func (self *VirtualFile) Init() {
-	self.File.Init()
-	self.CachedContent = string(self.File.Scan())
+func (self VirtualBlockedFile) Get(addr int64) Block {
+	block := self.File.Get(addr)
+	return block
 }
 
-func (self *VirtualFile) Read(offset int64, limit int64) string {
-	return self.CachedContent[offset : offset+limit]
+func (self VirtualBlockedFile) Push(data string) Block {
+	block := self.File.Push(data)
+	return block
 }
 
-func (self *VirtualFile) Scan() string {
-	return self.CachedContent
+func (self VirtualBlockedFile) All() []Block {
+	blocks := self.File.All()
+	return blocks
 }
 
-func (self *VirtualFile) Append(data string) {
-	self.CachedContent = self.CachedContent + data
-	self.File.Append([]byte(data))
+func (self VirtualBlockedFile) Set(addr int64, data string) {
+	self.File.Set(addr, data)
+}
+
+func (self VirtualBlockedFile) Delete(addr int64) {
+	self.Delete(addr)
+}
+
+func (self VirtualBlockedFile) Stat() FileStat {
+	stat := self.File.Stat()
+	return stat
 }

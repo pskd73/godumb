@@ -11,18 +11,18 @@ const (
 func GenerateIndexMap(records []Record, key string) IndexMap {
 	indexMap := make(IndexMap)
 
-	for i, record := range records {
-		UpdateIndexMap(indexMap, record[key], int64(i))
+	for _, record := range records {
+		UpdateIndexMap(indexMap, record.Data[key], record.Addr)
 	}
 
 	return indexMap
 }
 
-func UpdateIndexMap(indexMap IndexMap, key interface{}, idx int64) {
+func UpdateIndexMap(indexMap IndexMap, key interface{}, addr int64) {
 	if indexMap[key] == nil {
 		indexMap[key] = []int64{}
 	}
-	indexMap[key] = append(indexMap[key], idx)
+	indexMap[key] = append(indexMap[key], addr)
 }
 
 type Index struct {

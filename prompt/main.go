@@ -43,16 +43,16 @@ func GetById(state *State) {
 	fmt.Println(state.Collection.GetRecordById(id))
 }
 
-func GetByIdx(state *State) {
-	var idx string
+func GetByAddr(state *State) {
+	var addr string
 	fmt.Printf("Enter idx: ")
-	fmt.Scan(&idx)
+	fmt.Scan(&addr)
 
-	idxInt, err := strconv.Atoi(idx)
+	idxInt, err := strconv.Atoi(addr)
 	if err != nil {
 		return
 	}
-	fmt.Println(state.Collection.GetRecordByIdx(int64(idxInt)))
+	fmt.Println(state.Collection.GetRecordByAddr(int64(idxInt)))
 }
 
 func AddIndex(state *State) {
@@ -79,7 +79,7 @@ func Run() {
 	menu := []MenuItem{
 		{Name: "Load collection", Func: LoadCollection},
 		{Name: "Add index", Func: AddIndex},
-		{Name: "Get by idx", Func: GetByIdx},
+		{Name: "Get by idx", Func: GetByAddr},
 		{Name: "Get by _id", Func: GetById},
 		{Name: "Get by key", Func: GetByKey},
 		{Name: "Exit", Func: Exit},

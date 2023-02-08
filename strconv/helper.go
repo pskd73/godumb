@@ -1,4 +1,4 @@
-package core
+package strconv
 
 import (
 	"encoding/base64"
@@ -37,11 +37,11 @@ func Pad(str string, maxSize int) (string, error) {
 	var buf strings.Builder
 
 	buf.WriteString(str)
-	buf.WriteString(strings.Repeat("#", maxSize-len(str)))
+	buf.WriteString(strings.Repeat(" ", maxSize-len(str)))
 
 	return buf.String(), nil
 }
 
 func Unpad(str string) string {
-	return strings.ReplaceAll(str, "#", "")
+	return strings.ReplaceAll(str, " ", "")
 }

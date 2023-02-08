@@ -19,27 +19,30 @@ type Collection struct {
 func (self *Collection) Init(name string) {
 	self.name = name
 
-	f := file.PhysicalFile{Path: fmt.Sprintf("%s.db", name)}
-	file := file.BlockedFile{File: &f, BlockSize: BLOCK_SIZE}
-	file.Init()
-	self.File = file
+	physicalFile := file.PhysicalFile{Path: fmt.Sprintf("%s.db", name)}
+	blockedFile := file.FixedBlockedFile{File: &physicalFile, BlockSize: BLOCK_SIZE}
+	blockedFile.Init()
+
+	virtualFile := file.VirtualBlockedFile{File: blockedFile}
+	self.File = virtualFile
+
 	self.IndexMaps = make(map[string]IndexMap)
 	self.IndexMaps["_id"] = GenerateIndexMap(BlocksToRecords(self.File.All()), "_id")
 	fmt.Printf("Collection: %s initiated\n", name)
 }
 
-func (self *Collection) GetRecordByIdx(idx int64) Record {
-	return BlockToRecord(self.File.Get(idx))
+func (self *Collection) GetRecordByAddr(addr int64) Record {
+	return BlockToRecord(self.File.Get(addr))
 }
 
 func (self *Collection) GetRecordById(id string) Record {
-	return self.GetRecordByIdx(self.IndexMaps["_id"][id][0])
+	return self.GetRecordByAddr(self.IndexMaps["_id"][id][0])
 }
 
-func (self *Collection) Insert(record Record) {
-	record["_id"] = uuid.New().String()
-	idx := self.File.Push(RecordToBlock(record, self.File.BlockSize))
-	UpdateIndexMap(self.IndexMaps["_id"], record["_id"], idx)
+func (self *Collection) Insert(data map[string]interface{}) {
+	data["_id"] = uuid.New().String()
+	block := self.File.Push(DataToString(data))
+	UpdateIndexMap(self.IndexMaps["_id"], data["_id"], block.Addr)
 }
 
 func (self *Collection) GetAllRecords() []Record {
@@ -60,12 +63,12 @@ func (self *Collection) GetByKey(key string, value interface{}) []Record {
 	records := []Record{}
 	if addresses != nil {
 		for _, addr := range addresses {
-			records = append(records, self.GetRecordByIdx(addr))
+			records = append(records, self.GetRecordByAddr(addr))
 		}
 		return records
 	}
 	for _, record := range self.GetAllRecords() {
-		if record[key] == value {
+		if record.Data[key] == value {
 			records = append(records, record)
 		}
 	}

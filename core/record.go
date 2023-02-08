@@ -1,13 +1,22 @@
 package core
 
-type Record map[string]interface{}
+import (
+	"godumb/strconv"
 
-func BlockToRecord(block string) Record {
-	decoded := FromBase64(Unpad(block))
-	return StringToJson(decoded)
+	"godumb/file"
+)
+
+type Record struct {
+	Data map[string]interface{}
+	Addr int64
 }
 
-func BlocksToRecords(blocks []string) []Record {
+func BlockToRecord(block file.Block) Record {
+	decoded := strconv.FromBase64(block.Data)
+	return Record{Data: strconv.StringToJson(decoded), Addr: block.Addr}
+}
+
+func BlocksToRecords(blocks []file.Block) []Record {
 	records := []Record{}
 	for _, block := range blocks {
 		records = append(records, BlockToRecord(block))
@@ -15,9 +24,7 @@ func BlocksToRecords(blocks []string) []Record {
 	return records
 }
 
-func RecordToBlock(record Record, blockSize int) string {
-	jsonText := JsonToString(record)
-	str, err := Pad(ToBase64(jsonText), blockSize)
-	Panic(err)
-	return str
+func DataToString(data map[string]interface{}) string {
+	jsonText := strconv.JsonToString(data)
+	return strconv.ToBase64(jsonText)
 }

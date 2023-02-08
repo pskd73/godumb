@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"godumb/core"
+	"godumb/prompt"
 )
 
 func insertRandomRecords(collection *core.Collection) {
@@ -30,15 +31,21 @@ func main() {
 	// 	if lineJson != nil {
 	// 		collection.Insert(lineJson)
 	// 	}
+	// 	if i > 1000000000000000 {
+	// 		break
+	// 	}
 	// }
 
-	// prompt.Run()
+	prompt.Run()
 
-	coll := core.Collection{}
-	coll.Init("ytl")
-	coll.AddIndex("user_id")
-	fmt.Println("Index created")
-	fmt.Print(coll.GetByKey("date", "2013-02-28 02:05:54"))
+	// coll := core.Collection{}
+	// coll.Init("ytl")
+	// coll.AddIndex("user_id")
+	// fmt.Println("Index created")
+	// fmt.Println(coll.IndexMaps)
+	// fmt.Println(coll.GetByKey("_id", "d5bbdef7-5c37-4dc4-aa33-556a160fd7f5"))
+	// fmt.Print(coll.GetByKey("user_id", "HAApeWFR7aBy0OGT2Y4Qvg"))
+	// fmt.Println(coll.GetRecordByAddr(1)) //740166
 	// t1 := time.Now()
 	// for _, s := range coll.VirtualFile.CachedContent {
 	// 	fmt.Print(s)

@@ -20,11 +20,13 @@ func (self *Collection) Init(name string) {
 	self.name = name
 
 	physicalFile := file.PhysicalFile{Path: fmt.Sprintf("%s.db", name)}
-	blockedFile := file.FixedBlockedFile{File: &physicalFile, BlockSize: BLOCK_SIZE}
+	blockedFile := file.FixedBlockedFile{File: physicalFile, BlockSize: BLOCK_SIZE}
 	blockedFile.Init()
 
-	virtualFile := file.VirtualBlockedFile{File: blockedFile}
-	self.File = virtualFile
+	virtualFile := file.VirtualBlockedFile{File: &blockedFile}
+	virtualFile.Init()
+
+	self.File = &virtualFile
 
 	self.IndexMaps = make(map[string]IndexMap)
 	self.IndexMaps["_id"] = GenerateIndexMap(BlocksToRecords(self.File.All()), "_id")

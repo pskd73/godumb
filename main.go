@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"godumb/core"
-	"godumb/prompt"
+	"godumb/util"
 )
 
 func insertRandomRecords(collection *core.Collection) {
@@ -18,7 +18,35 @@ func insertRandomRecords(collection *core.Collection) {
 	}
 }
 
+type Human interface {
+	SetName(string)
+	GetName() string
+}
+
+type Person struct {
+	Name string
+}
+
+func (self *Person) SetName(name string) {
+	self.Name = name
+}
+
+func (self *Person) GetName() string {
+	return self.Name
+}
+
+type World struct {
+	Human
+}
+
+func (self World) GetHumanName() string {
+	return self.Human.GetName()
+}
+
 func main() {
+	timer := util.Timer{}
+	timer.Init()
+
 	// collection := core.Collection{}
 	// collection.Init("yelp_tip")
 	// data, _ := ioutil.ReadFile("yelp_academic_dataset_tip.json")
@@ -36,14 +64,30 @@ func main() {
 	// 	}
 	// }
 
-	prompt.Run()
+	// prompt.Run()
 
-	// coll := core.Collection{}
-	// coll.Init("ytl")
+	// person := Person{}
+	// person.SetName("Pramod")
+
+	// var world World = World{Human: &person}
+	// world.Human = &person
+	// fmt.Println(world.GetHumanName())
+
+	coll := core.Collection{}
+	coll.Init("yelp_tip")
 	// coll.AddIndex("user_id")
 	// fmt.Println("Index created")
 	// fmt.Println(coll.IndexMaps)
-	// fmt.Println(coll.GetByKey("_id", "d5bbdef7-5c37-4dc4-aa33-556a160fd7f5"))
+
+	timer.Check(false)
+	coll.GetByKey("business_id", "Z9Q1IgIPB64Um_BNWpWgCA")
+	timer.Check(true)
+
+	coll.AddIndex("business_id")
+
+	timer.Check(false)
+	coll.GetByKey("business_id", "Z9Q1IgIPB64Um_BNWpWgCA")
+	timer.Check(true)
 	// fmt.Print(coll.GetByKey("user_id", "HAApeWFR7aBy0OGT2Y4Qvg"))
 	// fmt.Println(coll.GetRecordByAddr(1)) //740166
 	// t1 := time.Now()
